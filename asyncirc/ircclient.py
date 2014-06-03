@@ -1,6 +1,7 @@
 import sys
 from functools import wraps
 import socket
+import ssl
 import threading
 import logging
 
@@ -53,7 +54,7 @@ class IRCClient(object):
     running = True
 
     def __init__(self, host, port=6667, nick='UNCONFIGURED', ident='PythonIRCClient', realname='PythonIRCClient',
-                 password=None):
+                 password=None, use_ssl=False):
         """Create a new IRC Client instance
 
         :param host: required server host
@@ -74,11 +75,15 @@ class IRCClient(object):
         self.password = password
         self.ident = ident
         self.realname = realname
+        self.use_ssl = use_ssl
 
         self._in_queue = queue.Queue()
         self._out_queue = queue.Queue()
         self._stop_event = threading.Event()
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if use_ssl:
+            self._regular_socket = self._socket
+            self._socket = ssl.wrap_socket(self._regular_socket)
 
 
     def _async_send(self):
@@ -114,7 +119,7 @@ class IRCClient(object):
                 recbuffer = data.pop()
                 if data:
                     for line in data:
-                        self._process_data(line.decode())
+                        self._process_data(line.decode(encoding='UTF-8', errors='ignore'))
             except BlockingIOError as e:
                 pass
         logging.info("Receive loop stopped")
@@ -177,6 +182,6 @@ class IRCClient(object):
             self.send_raw("JOIN %s" % channel)
 
     def msg(self, channel, message):
-        self.send_raw("PRIVMSG {channel} {message}".format(channel=channel, message=message))
+        self.send_raw("PRIVMSG {channel} :{message}".format(channel=channel, message=message))
 
 __all__ = ['IRCClient']
