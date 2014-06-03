@@ -80,10 +80,10 @@ class IRCClient(object):
         self._in_queue = queue.Queue()
         self._out_queue = queue.Queue()
         self._stop_event = threading.Event()
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if use_ssl:
-            self._regular_socket = self._socket
-            self._socket = ssl.wrap_socket(self._regular_socket)
+            self._socket = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+        else:
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 
     def _async_send(self):
