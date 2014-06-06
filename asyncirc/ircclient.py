@@ -4,6 +4,7 @@ import socket
 import ssl
 import threading
 import logging
+import time
 
 if sys.hexversion < 0x03000000:
     #Python 2
@@ -89,10 +90,12 @@ class IRCClient(object):
     def _async_send(self):
         logging.info("Send loop started")
         while not self._stop_event.is_set():
+            time.sleep(0.01)
             try:
                 msg = self._out_queue.get(timeout=1)
                 if msg:
                     while True: #Retry sending until it succeeds
+                        time.sleep(0.01)
                         try:
                             self._socket.send(msg.encode("UTF-8"))
                             self._out_queue.task_done()
@@ -113,6 +116,7 @@ class IRCClient(object):
         recbuffer = b""
 
         while not self._stop_event.is_set():
+            time.sleep(0.01)
             try:
                 recbuffer = recbuffer + self._socket.recv(1024)
                 data = recbuffer.split(b'\r\n')
