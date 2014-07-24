@@ -8,6 +8,7 @@ import socket
 import re
 import threading
 import logging
+import time
 
 if sys.hexversion < 0x03000000:
     #Python 2
@@ -51,6 +52,7 @@ class IRCBot(IRCClient):
 
     def _async_process(self):
         while not self._stop_event.is_set():
+            time.sleep(0.01)
             try:
                 args = self._in_queue.get_nowait()
                 #These "msg"s will be raw irc received lines, which have several forms
