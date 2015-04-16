@@ -70,8 +70,7 @@ class IRCClient(object):
 
         :param password=None: Password for the server
         """
-        self.host = host
-        self.port = port
+        self.host = socket.getaddrinfo(host, port)[0]
         self.nick = nick
         self.password = password
         self.ident = ident
@@ -81,10 +80,11 @@ class IRCClient(object):
         self._in_queue = queue.Queue()
         self._out_queue = queue.Queue()
         self._stop_event = threading.Event()
+
         if use_ssl:
-            self._socket = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+            self._socket = ssl.wrap_socket(socket.socket(self.host[0], socket.SOCK_STREAM))
         else:
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket = socket.socket(self.host[0], socket.SOCK_STREAM)
 
 
     def _async_send(self):
@@ -141,7 +141,7 @@ class IRCClient(object):
         logging.debug(' '.join(line))
 
     def start(self):
-        self._socket.connect((self.host, self.port))
+        self._socket.connect(self.host[4])
         self._socket.setblocking(0)
 
         self.running = True
@@ -157,7 +157,7 @@ class IRCClient(object):
         self.send_raw("NICK {nick}".format(nick=self.nick))
         self.send_raw("USER {ident} {host} localhost :{realname}".format(
             ident=self.ident,
-            host=self.host,
+            host=self.host[4][0],
             realname=self.realname))
 
 
