@@ -20,7 +20,7 @@ else:
 from .ircclient import IRCClient
 
 #Somewhat complex regex that accurately matches nick!username@host, with named groups for easy parsing and usage
-user_re = re.compile(r'(?P<nick>[\w\d<-\[\]\^\{\}]+)!(?P<user>[\w\d<-\[\]\^\{\}]+)@(?P<host>.+)')
+user_re = re.compile(r'(?P<nick>[\w\d<-\[\]\^\{\}\~]+)!(?P<user>[\w\d<-\[\]\^\{\}\~]+)@(?P<host>.+)')
 
 class IRCBot(IRCClient):
     '''See `IRCClient` for basic client usage, here is usage for the bot system
